@@ -230,11 +230,19 @@ class FitFileTestCase(unittest.TestCase):
             self.assertEqual(gear_change.get_value(field), 20)
 
     def test_parsing_edge_500_fit_file(self):
-        csv_fp = open(testfile('garmin-edge-500-activitiy-records.csv'), 'r')
+        self.csv_test_helper('garmin-edge-500-activitiy-records.csv',
+            'garmin-edge-500-activitiy.fit')
+            
+    def test_parsing_edge_500_fit_file_liam(self):
+        self.csv_test_helper('garmin-edge-500-activity.csv',
+            'garmin-edge-500-activitiy.fit')
+            
+    def csv_test_helper(self, csv_filename, fit_filename):
+        csv_fp = open(testfile(csv_filename), 'r')
         csv_messages = csv.reader(csv_fp)
         field_names = next(csv_messages)  # Consume header
 
-        f = FitFile(testfile('garmin-edge-500-activitiy.fit'))
+        f = FitFile(testfile(fit_filename))
         messages = f.get_messages(name='record')
 
         # For fixups
@@ -345,7 +353,9 @@ class FitFileTestCase(unittest.TestCase):
                   'WorkoutRepeatGreaterThanStep.fit', 'WorkoutRepeatSteps.fit',
                   'activity-large-fenxi2-multisport.fit', 'activity-small-fenix2-run.fit',
                   'antfs-dump.63.fit', 'sample-activity-indoor-trainer.fit',
-                  'sample-activity.fit'):
+                  'sample-activity.fit', 'garmin-fenix-5-walk.fit',
+                  'garmin-fenix-5-run.fit', 'garmin-fenix-5-bike.fit',
+                  'garmin-edge-820-bike.fit'):
             FitFile(testfile(x)).parse()
 
     def test_units_processor(self):
@@ -357,7 +367,9 @@ class FitFileTestCase(unittest.TestCase):
                   'WorkoutRepeatGreaterThanStep.fit', 'WorkoutRepeatSteps.fit',
                   'activity-large-fenxi2-multisport.fit', 'activity-small-fenix2-run.fit',
                   'antfs-dump.63.fit', 'sample-activity-indoor-trainer.fit',
-                  'sample-activity.fit'):
+                  'sample-activity.fit', 'garmin-fenix-5-walk.fit',
+                  'garmin-fenix-5-run.fit', 'garmin-fenix-5-bike.fit',
+                  'garmin-edge-820-bike.fit'):
             FitFile(testfile(x), data_processor=StandardUnitsDataProcessor()).parse()
 
     # TODO:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import csv
 import sys
 
 # Python 2 compat
@@ -25,9 +26,20 @@ def format_message(message, options):
             if field_data.units:
                 s += ' [%s]' % field_data.units
             s += '\n'
-
+    else:
+        print message.tpye
     return s
+    
+_DEFAULT_RUN_HEADERS = [
+    'timestamp', 'altitude [m]', 'cadence [rpm]', 'distance [km]',
+    'heart_rate [bpm]', 'position_lat [deg]', 'position_long [deg]',
+    'speed [km/h]', 'temperature [C]', 'unknown_39', 'unknown_40',
+    'unknown_41', 'unknown_42', 'unknown_53', 'unknown_83', 'unknown_84',
+    'unknown_85', 'unknown_87', 'unknown_88']
 
+_DEFAULT_HEADERS = [
+    'timestamp', 'heart_rate', 'cadence', 'speed', 'distance',
+    'position_lat', 'position_long', 'altitude', 'temperature']
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser(
@@ -68,7 +80,35 @@ def parse_args(args=None):
         options.print_stream = sys.stdout
 
     return options
+    
+def field_name(record_data):
+    #if record_data.units:
+    #    return "%s [%s]" % (record_data.name, record_data.units)
+    return record_data.name
+    
+def record_as_dict(record):
+    d = {}
+    for record_data in record:
+        name = field_name(record_data)
+        d[name] = record.get_value(name) #record_data.value
+    return d
+    
+def record_as_row(record, headers):
+    d = record_as_dict(record)
+    row =[]
+    for header in headers:
+        try:
+            row.append(d[header])
+        except KeyError:
+            pass
+    return row
 
+def get_csv_headers(messages):
+    headers = set()
+    for record in messages:
+        for record_data in record:
+            headers.add(field_name(record_data))
+    return sorted(headers)
 
 def main(args=None):
     options = parse_args(args)
@@ -78,15 +118,24 @@ def main(args=None):
         data_processor=fitparse.StandardUnitsDataProcessor(),
         check_crc = not(options.ignore_crc),
     )
+    """
     messages = fitfile.get_messages(
         name=options.name,
         with_definitions=options.with_defs,
     )
+    """
+    #messages = fitfile.get_messages('record')
+    
+    #headers = get_csv_headers(messages)
+    headers = _DEFAULT_HEADERS
+    #with open(options.output, 'wb') as fh:
+    writer = csv.writer(options.output)
+    writer.writerow(headers)
 
+    messages = fitfile.get_messages('record')
     for n, message in enumerate(messages, 1):
-        if options.print_messages:
-            print('{}. {}'.format(n, format_message(message, options), file=options.print_stream))
-
+        writer.writerow(record_as_row(message, headers))
+        
 if __name__ == '__main__':
     try:
         main()

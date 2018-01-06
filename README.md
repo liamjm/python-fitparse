@@ -49,7 +49,16 @@ Major Changes From Original Version
   * Support for parsing one record at a time. This can be done using
     `<FitFile>.parse_one()` for now, but I'm not sure of the exact
     implementation yet.
+    
+    
+Updating to new FIT SDK versions
+--------------------------------
+Download the latest SDK from http://www.thisisant.com/pages/products/fit-sdk
 
+Update the profile:
+```
+python3 /path/to/fit_sdk.zip scripts/generate_profile.py > fitparse/profile.py
+```
 
 License
 -------
